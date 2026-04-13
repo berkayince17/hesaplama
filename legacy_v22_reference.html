@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kasa Optimizasyon Aracı v22 | Remainder Gap Edition</title>
+    <style>
+        :root {
+            --bg-color: #f1f5f9; --card-bg: #ffffff; --primary: #0f172a;
+            --secondary: #3b82f6; --accent-red: #ef4444; --accent-orange: #f59e0b;
+            --accent-green: #10b981; --text-main: #334155; --text-light: #64748b;
+            --border: #e2e8f0;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); display: flex; justify-content: center; padding: 20px; }
+        .container { background-color: var(--card-bg); max-width: 1250px; width: 100%; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); overflow: hidden; }
+        
+        .header { background-color: var(--primary); color: white; padding: 20px 30px; display: flex; justify-content: space-between; align-items: center;}
+        .header h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px;}
+        .badge { background: #4f46e5; color: white; padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; letter-spacing: 1px;}
+
+        .content { display: grid; grid-template-columns: 350px 1fr; gap: 20px; padding: 20px; }
+        @media (max-width: 1000px) { .content { grid-template-columns: 1fr; } }
+
+        .input-panel { background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid var(--border); }
+        .section-title { font-size: 13px; font-weight: 800; margin-bottom: 15px; color: var(--primary); border-bottom: 2px solid var(--border); padding-bottom: 5px;}
+        
+        .input-row { display: flex; gap: 10px; margin-bottom: 12px; }
+        .input-row > div { flex: 1; }
+        label { display: block; font-size: 11px; color: var(--text-light); margin-bottom: 4px; font-weight: 700; }
+        input, select { width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; font-weight:600;}
+        
+        .display-panel { display: flex; flex-direction: column; gap: 15px; }
+        
+        .visual-grid { display: grid; grid-template-columns: 1fr 1.8fr; gap: 15px; }
+        .viz-card { background: #fff; padding: 15px; border-radius: 12px; border: 1px solid var(--border); position: relative;}
+        .viz-card.full-width { grid-column: 1 / -1; }
+        
+        .viz-label { font-size: 11px; font-weight: 800; color: var(--text-light); margin-bottom: 10px; border-left: 3px solid var(--secondary); padding-left: 8px;}
+        
+        .svg-box { width: 100%; height: 180px; background: #fafafa; border-radius: 6px; display: flex; justify-content: center; align-items: center; border: 1px dashed var(--border);}
+        .svg-box.blueprint { height: 180px; background: #f8fafc; border: 1px solid #cbd5e1; }
+
+        .result-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+        .res-box { padding: 15px; border-radius: 12px; text-align: center; color: white; }
+        .res-heat { background: var(--primary); border-bottom: 4px solid var(--accent-red); }
+        .res-weight { background: var(--accent-orange); }
+        .res-ratio { background: #64748b; }
+        .res-val { font-size: 28px; font-weight: 800; display: block; }
+        .res-lab { font-size: 10px; text-transform: uppercase; opacity: 0.9; font-weight: 700; }
+
+        .info-box { font-size: 13px; font-weight: 600; padding: 12px; border-radius: 8px; background: #f0fdf4; border-left: 4px solid var(--accent-green); text-align: center;}
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <div>
+            <h1>Kasa Optimizasyon Aracı v22</h1>
+            <p>Sıfıra-Sıfır İmalat & Asimetrik Aralık Kapanışı</p>
+        </div>
+        <div class="badge">V22 PRECISION BUILD</div>
+    </div>
+
+    <div class="content">
+        <div class="input-panel">
+            <h2 class="section-title">📦 Kasa & Panel (cm)</h2>
+            <div class="input-row">
+                <div><label>Uzunluk</label><input type="number" id="lBox" value="1360" oninput="calc()"></div>
+                <div><label>Yükseklik</label><input type="number" id="hBox" value="260" oninput="calc()"></div>
+            </div>
+            <div class="input-row">
+                <div><label>Panel (mm)</label><input type="number" id="thickBox" value="50" oninput="calc()"></div>
+                <div><label>Delta T (°C)</label><input type="number" id="deltaT" value="40" oninput="calc()"></div>
+            </div>
+
+            <h2 class="section-title" style="margin-top: 20px;">🏗️ Karkas Parametreleri (mm)</h2>
+            <div class="input-row">
+                <div>
+                    <label>Profil Tipi</label>
+                    <select id="pType" onchange="calc()">
+                        <option value="box">Kutu Profil</option>
+                        <option value="c-shape">C/U Profil</option>
+                    </select>
+                </div>
+                <div><label>Hatve (Aralık)</label><input type="number" id="pPitch" value="650" step="50" oninput="calc()"></div>
+            </div>
+            <div class="input-row">
+                <div><label>Genişlik (W)</label><input type="number" id="pW" value="40" oninput="calc()"></div>
+                <div><label>Derinlik (D)</label><input type="number" id="pD" value="40" oninput="calc()"></div>
+                <div><label>Et Kalınlığı</label><input type="number" id="pt" value="2" oninput="calc()"></div>
+            </div>
+
+            <h2 class="section-title" style="margin-top: 20px; color: var(--accent-red);">📐 Köşe Tasarımı</h2>
+            <div>
+                <label>Köşe Birleşim Tipi</label>
+                <select id="cornerType" onchange="calc()" style="border-color: var(--accent-red); font-weight:bold;">
+                    <option value="box_corner">Kutu Profil Köşe</option>
+                    <option value="standard">L-Profil Standart</option>
+                    <option value="thermal">Isı Kırıcılı Profil</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="display-panel">
+            <div class="visual-grid">
+                <div class="viz-card">
+                    <div class="viz-label">KÖŞE DETAYI (L-BİRLEŞİM)</div>
+                    <div class="svg-box" id="svgCorner"></div>
+                </div>
+                <div class="viz-card">
+                    <div class="viz-label">KARKAS ŞEMASI (YAN GÖRÜNÜŞ)</div>
+                    <div class="svg-box" id="svgElevation"></div>
+                </div>
+                <div class="viz-card full-width">
+                    <div class="viz-label">TAM BOY ÜST KESİT (KAPATMA PAYI GÖSTERİMLİ)</div>
+                    <div class="svg-box blueprint" id="svgFullPlan"></div>
+                </div>
+            </div>
+
+            <div class="result-bar">
+                <div class="res-box res-heat">
+                    <span class="res-lab">Toplam Isı Kaybı</span>
+                    <span class="res-val" id="resHeat">0</span>
+                    <span style="font-size:12px;">Watt</span>
+                </div>
+                <div class="res-box res-weight">
+                    <span class="res-lab">Toplam Ağırlık</span>
+                    <span class="res-val" id="resWeight">0</span>
+                    <span style="font-size:12px;">kg</span>
+                </div>
+                <div class="res-box res-ratio">
+                    <span class="res-lab">Köşe Isı Payı</span>
+                    <span class="res-val" id="resCornerShare">%0</span>
+                    <span style="font-size:10px;" id="resCornerW">0 W</span>
+                </div>
+            </div>
+            
+            <div id="engAdvice" class="info-box">Analiz ediliyor...</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const PSI = { box_corner: 0.55, standard: 0.35, thermal: 0.15 };
+    
+    // Algoritma: Başa 0, Sona 0
+    function getProfilePositions(boxL_mm, pitch_mm, pW_mm) {
+        let pos = [0]; 
+        let curr = pitch_mm;
+        
+        while(curr < boxL_mm - pW_mm) {
+            pos.push(curr);
+            curr += pitch_mm;
+        }
+        
+        if(boxL_mm > 0) {
+            pos.push(boxL_mm - pW_mm);
+        }
+        return pos;
+    }
+
+    function drawCorner(thick, pD, cType) {
+        const sW = 200, sH = 180, sc = 2;
+        let sSvg = `<svg width="100%" height="100%" viewBox="0 0 ${sW} ${sH}">
+            <rect x="60" y="40" width="100" height="${thick*sc}" fill="#fef9c3" stroke="#eab308" />
+            <rect x="60" y="40" width="${thick*sc}" height="100" fill="#fef9c3" stroke="#eab308" />`;
+        if(cType === 'box_corner') {
+            sSvg += `<rect x="60" y="40" width="${pD*sc}" height="${pD*sc}" fill="#94a3b8" stroke="#1e293b" stroke-width="2" />
+                     <rect x="${60+4}" y="${40+4}" width="${pD*sc-8}" height="${pD*sc-8}" fill="#fff" />
+                     <path d="M 55 35 L 45 25" stroke="#ef4444" stroke-width="2" marker-end="url(#arr)"/>`;
+        } else {
+            sSvg += `<path d="M 60 40 L 140 40 L 140 45 L 65 45 L 65 130 L 60 130 Z" fill="#475569" />`;
+        }
+        sSvg += `<defs><marker id="arr" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#ef4444"/></marker></defs></svg>`;
+        document.getElementById('svgCorner').innerHTML = sSvg;
+    }
+
+    function drawElevation(boxL_cm, boxH_cm, pitch_mm, pW_mm, pD_mm, type) {
+        const eW = 400, eH = 180;
+        const eSc = (boxL_cm > 800) ? 0.25 : 0.4; 
+        
+        const dispL = boxL_cm * eSc;
+        const dispH = boxH_cm * eSc;
+        const fT = (pD_mm/10) * eSc + 2; 
+        
+        let eSvg = `<svg width="100%" height="100%" viewBox="0 0 ${eW} ${eH}">
+            <rect x="20" y="20" width="${dispL}" height="${dispH}" fill="#fef9c3" stroke="#eab308" opacity="0.6"/>
+            <rect x="20" y="${20-fT}" width="${dispL}" height="${fT}" fill="#475569" stroke="#1e293b"/>
+            <rect x="20" y="${20+dispH}" width="${dispL}" height="${fT}" fill="#475569" stroke="#1e293b"/>`;
+        
+        const positions_mm = getProfilePositions(boxL_cm * 10, pitch_mm, pW_mm);
+        
+        for(let i=0; i<positions_mm.length; i++){
+            let startX = 20 + (positions_mm[i] / 10) * eSc;
+            let dispW = (pW_mm/10) * eSc;
+            if(dispW < 2) dispW = 2; 
+
+            if(type === 'box') {
+                eSvg += `<rect x="${startX}" y="20" width="${dispW}" height="${dispH}" fill="#94a3b8" stroke="#334155" opacity="0.8"/>`;
+            } else {
+                eSvg += `<line x1="${startX}" y1="20" x2="${startX}" y2="${20+dispH}" stroke="#334155" stroke-width="2" />`;
+            }
+        }
+        eSvg += `<text x="20" y="10" font-size="10" font-weight="bold" fill="#1e293b">L: ${boxL_cm} cm</text></svg>`;
+        document.getElementById('svgElevation').innerHTML = eSvg;
+    }
+
+    // TAM BOY ÜST KESİT - SON KALAN ARALIK YAKALAYICILI
+    function drawFullPlan(boxL_cm, thick_mm, pitch_mm, pW_mm, pD_mm, pt_mm, pType) {
+        const vW = 1200, vH = 180; 
+        const padX = 50, padY = 60; 
+        
+        const boxL_mm = boxL_cm * 10;
+        const drawL = vW - (2 * padX); 
+        const scX = drawL / boxL_mm;   
+        const drawThick = 60; 
+        const scY = drawThick / thick_mm; 
+        
+        let svg = `<svg viewBox="0 0 ${vW} ${vH}" width="100%" height="100%">`;
+        
+        // PANEL
+        svg += `<rect x="${padX}" y="${padY}" width="${drawL}" height="${drawThick}" fill="#fef9c3" stroke="#eab308" stroke-width="1.5" />`;
+        
+        const positions_mm = getProfilePositions(boxL_mm, pitch_mm, pW_mm);
+
+        for(let i=0; i<positions_mm.length; i++) {
+            let d_px = pD_mm * scY; 
+            let w_px = d_px * (pW_mm / pD_mm) * 0.35; 
+            if(w_px < 4) w_px = 4;
+
+            let startX;
+            if(i === 0) {
+                startX = padX;
+            } else if (i === positions_mm.length - 1) {
+                startX = padX + drawL - w_px;
+            } else {
+                startX = padX + (positions_mm[i] * scX);
+            }
+
+            if (pType === 'box') {
+                svg += `<rect x="${startX}" y="${padY}" width="${w_px}" height="${d_px}" fill="#94a3b8" stroke="#0f172a" stroke-width="1.5"/>`;
+                let t_px = Math.max(1, (pt_mm / pD_mm) * d_px * 0.5); 
+                svg += `<rect x="${startX + t_px}" y="${padY + t_px}" width="${Math.max(1, w_px - 2*t_px)}" height="${Math.max(1, d_px - 2*t_px)}" fill="#f1f5f9" stroke="#0f172a" stroke-width="0.5"/>`;
+            } else {
+                let t_px = Math.max(1.5, (pt_mm / pD_mm) * d_px * 0.5);
+                svg += `<path d="M ${startX+w_px} ${padY} L ${startX} ${padY} L ${startX} ${padY+d_px} L ${startX+w_px} ${padY+d_px}" fill="none" stroke="#0f172a" stroke-width="${t_px}" />`;
+            }
+            
+            if (pD_mm >= thick_mm) {
+                svg += `<line x1="${startX - 2}" y1="${padY + drawThick}" x2="${startX + w_px + 2}" y2="${padY + drawThick}" stroke="#ef4444" stroke-width="3"/>`;
+            }
+        }
+
+        svg += `<line x1="${padX}" y1="${padY + drawThick + 25}" x2="${padX + drawL}" y2="${padY + drawThick + 25}" stroke="#334155" stroke-width="2" />`;
+        svg += `<line x1="${padX}" y1="${padY + drawThick + 15}" x2="${padX}" y2="${padY + drawThick + 35}" stroke="#334155" stroke-width="2" />`;
+        svg += `<line x1="${padX + drawL}" y1="${padY + drawThick + 15}" x2="${padX + drawL}" y2="${padY + drawThick + 35}" stroke="#334155" stroke-width="2" />`;
+        svg += `<text x="${padX + drawL/2}" y="${padY + drawThick + 40}" font-size="14" fill="#0f172a" text-anchor="middle" font-weight="900">TOPLAM KASA UZUNLUĞU = ${boxL_cm} cm</text>`;
+        
+        svg += `<text x="${padX}" y="${padY - 35}" font-size="12" fill="#d97706" font-weight="800">⬆ PU KÖPÜK YÖNÜ (İÇ ORTAM)</text>`;
+        svg += `<text x="${padX}" y="${padY + drawThick + 12}" font-size="12" fill="#2563eb" font-weight="800">⬇ DIŞ SAC (DIŞ ORTAM)</text>`;
+        
+        // ÖLÇÜLER: 1. Normal Hatve  2. Son Kapatma Payı (Farklıysa)
+        if(positions_mm.length > 1) {
+            // İlk Aralık (Normal Hatve)
+            let hx1 = padX;
+            let hx2 = padX + (pitch_mm * scX);
+            svg += `<line x1="${hx1}" y1="${padY - 10}" x2="${hx2}" y2="${padY - 10}" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="4"/>`;
+            svg += `<text x="${(hx1+hx2)/2}" y="${padY - 15}" font-size="11" fill="#ef4444" text-anchor="middle" font-weight="bold">Hatve: ${pitch_mm}mm</text>`;
+
+            // Son Aralık (Kapatma Payı) Kontrolü
+            let lastIdx = positions_mm.length - 1;
+            let prevIdx = positions_mm.length - 2;
+            let lastGap_mm = Math.round(positions_mm[lastIdx] - positions_mm[prevIdx]);
+            
+            // Eğer son kalan boşluk normal hatveden farklıysa turuncuyla çiz
+            if (Math.abs(lastGap_mm - pitch_mm) > 1) {
+                let lx1 = padX + (positions_mm[prevIdx] * scX);
+                let lx2 = padX + (positions_mm[lastIdx] * scX);
+                svg += `<line x1="${lx1}" y1="${padY - 10}" x2="${lx2}" y2="${padY - 10}" stroke="#f59e0b" stroke-width="2" stroke-dasharray="2"/>`;
+                svg += `<text x="${(lx1+lx2)/2}" y="${padY - 15}" font-size="11" fill="#f59e0b" text-anchor="middle" font-weight="bold">Son Kalan: ${lastGap_mm}mm</text>`;
+            }
+        }
+
+        svg += `</svg>`;
+        document.getElementById('svgFullPlan').innerHTML = svg;
+    }
+
+    function calc() {
+        const boxL = parseFloat(document.getElementById('lBox').value) || 0;
+        const boxH = parseFloat(document.getElementById('hBox').value) || 0;
+        const thick = parseFloat(document.getElementById('thickBox').value) || 1;
+        const dT = parseFloat(document.getElementById('deltaT').value) || 0;
+        const pitch = parseFloat(document.getElementById('pPitch').value) || 600;
+        const cType = document.getElementById('cornerType').value;
+        const pType = document.getElementById('pType').value;
+
+        const pW = parseFloat(document.getElementById('pW').value) || 40;
+        const pD = parseFloat(document.getElementById('pD').value) || 40;
+        const pt = parseFloat(document.getElementById('pt').value) || 2;
+
+        drawCorner(thick, pD, cType);
+        drawElevation(boxL, boxH, pitch, pW, pD, pType);
+        drawFullPlan(boxL, thick, pitch, pW, pD, pt, pType);
+
+        const area = (boxL/100) * (boxH/100);
+        const count = getProfilePositions(boxL * 10, pitch, pW).length;
+        
+        const R_pu = (thick/1000) / (0.025 * (area * ((pitch-pW)/pitch)));
+        const webs = (pType === 'box') ? 2 : 1;
+        const R_metal = ((Math.max(0, thick-pD))/1000 / (0.025 * (area*webs*pt/pitch))) + (pD/1000 / (32 * (area*webs*pt/pitch)));
+        const qWall = dT / (1 / (1/R_pu + 1/R_metal));
+
+        const qCorner = PSI[cType] * (boxH/100 * 4) * dT;
+        const qTotal = qWall + qCorner;
+
+        let section = (pType === 'box') ? (pW*pD - (pW-2*pt)*(pD-2*pt)) : (pW*pt*2 + (pD-2*pt)*pt);
+        section = section / 1000000;
+        const weight = (section * (boxH/100) * count * 7850) + (section * (boxL/100) * 2 * 7850); 
+
+        document.getElementById('resHeat').innerText = Math.round(qTotal).toLocaleString('tr-TR');
+        document.getElementById('resWeight').innerText = Math.round(weight).toLocaleString('tr-TR');
+        document.getElementById('resCornerShare').innerText = "% " + ((qCorner/qTotal)*100).toFixed(1);
+        document.getElementById('resCornerW').innerText = Math.round(qCorner) + " W";
+
+        const advice = document.getElementById('engAdvice');
+        if(pD >= thick) {
+            advice.innerHTML = "⚠️ <strong>DİKKAT:</strong> Dikmeler dış saca direkt temas ediyor! Blueprintte kırmızı çizgilerle işaretlendi. (Isı Köprüsü max seviyede).";
+            advice.style.borderLeftColor = "#ef4444";
+        } else {
+            advice.innerHTML = "💡 <strong>TAVSİYE:</strong> Profil aralığı ve yalıtım boşluğu kusursuz. Blueprintte dikmelerin köpük içinde gömülü olduğunu teyit et.";
+            advice.style.borderLeftColor = "#10b981";
+        }
+    }
+    window.onload = calc;
+</script>
+</body>
+</html>

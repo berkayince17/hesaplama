@@ -1,0 +1,7 @@
+.next
+node_modules
+out
+coverage
+hesaplama-repo.zip
+*.log
+.DS_Store
